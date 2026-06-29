@@ -89,7 +89,7 @@ public class NotificationService {
     @Transactional
     public CountResponse markAllRead(Long userId) {
         var unread = notificationRepository.findByRecipientIdAndReadAtIsNull(userId);
-        unread.forEach(Notification::markRead);
+        unread.forEach(notification -> notification.markRead());
         return new CountResponse(unread.size());
     }
 }

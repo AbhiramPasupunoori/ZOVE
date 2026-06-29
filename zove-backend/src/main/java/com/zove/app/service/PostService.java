@@ -139,7 +139,7 @@ public class PostService {
     public PageResponse<PostResponse> hashtag(Long currentUserId, String tag, int page, int size) {
         var normalizedTag = normalizeTag(tag);
         var posts = postHashtagRepository.findByTagOrderByPostCreatedAtDesc(normalizedTag).stream()
-                .map(PostHashtag::getPost)
+                .map(postHashtag -> postHashtag.getPost())
                 .distinct()
                 .toList();
         return toPostPage(posts, currentUserId, page, size);

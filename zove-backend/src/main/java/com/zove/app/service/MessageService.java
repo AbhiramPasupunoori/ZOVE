@@ -90,7 +90,7 @@ public class MessageService {
     public List<MessageResponse> messages(Long userId, Long conversationId) {
         var conversation = getConversationForUser(userId, conversationId);
         chatMessageRepository.findByConversationIdAndRecipientIdAndReadAtIsNull(conversationId, userId)
-                .forEach(ChatMessage::markRead);
+                .forEach(message -> message.markRead());
         return chatMessageRepository.findByConversationIdOrderByCreatedAtAsc(conversation.getId()).stream()
                 .map(mapper::toMessage)
                 .toList();

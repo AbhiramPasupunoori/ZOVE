@@ -33,7 +33,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     ) {
         this.jwtDecoder = jwtDecoder;
         this.allowedOrigins = Arrays.stream(allowedOrigins.split(","))
-                .map(String::trim)
+                .map(origin -> origin.trim())
                 .filter(origin -> !origin.isBlank())
                 .toArray(String[]::new);
     }
