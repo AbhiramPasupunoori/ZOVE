@@ -1,4 +1,5 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96" role="img" aria-labelledby="zove-mark-title">
+  <title id="zove-mark-title">ZOVE</title>
   <defs>
     <linearGradient id="zove-bg" x1="12" y1="10" x2="86" y2="88" gradientUnits="userSpaceOnUse">
       <stop stop-color="#12151b"/>

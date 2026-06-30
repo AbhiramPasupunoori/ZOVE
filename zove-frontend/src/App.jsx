@@ -1,9 +1,13 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import axios from 'axios'
 import {
   Bell,
-  Camera,
-  CheckCircle2,
+  Bookmark,
+  CalendarDays,
+  Check,
+  Clapperboard,
+  Compass,
+  Hash,
   Heart,
   Home,
   ImagePlus,
@@ -12,68 +16,220 @@ import {
   LogIn,
   LogOut,
   MessageCircle,
-  RefreshCw,
+  MoreHorizontal,
+  Moon,
+  Pause,
+  PenLine,
+  Play,
+  Repeat2,
   Search,
   Send,
   ShieldCheck,
+  Sparkles,
+  Sun,
   UserPlus,
   Users,
+  X,
 } from 'lucide-react'
-import heroImg from './assets/hero.png'
+import cafeImg from './assets/feed-cafe.jpg'
+import streetImg from './assets/feed-street.jpg'
+import studioImg from './assets/feed-studio.jpg'
+import zoveMark from './assets/zove-mark.svg'
 import './App.css'
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:8080/api'
 const AUTH_STORAGE_KEY = 'zove.auth'
+const PROFILE_STORAGE_KEY = 'zove.profile'
+const THEME_STORAGE_KEY = 'zove.theme'
 
 const api = axios.create({
   baseURL: API_BASE_URL,
 })
 
-const roadmapItems = [
-  ['Project setup', 'done'],
-  ['JWT auth', 'done'],
-  ['User profiles', 'next'],
-  ['Posts', 'queued'],
-  ['Likes and comments', 'queued'],
-  ['Follow graph', 'queued'],
-  ['Home feed', 'queued'],
-  ['Notifications', 'queued'],
-  ['Messaging', 'queued'],
-]
-
-const feedItems = [
-  {
-    author: 'Mira Chen',
-    handle: '@mira',
-    time: '12m',
-    text: 'Profile foundations are next. Bio, avatar, cover image, and editable public identity are lined up after auth.',
-    accent: 'teal',
-    stats: ['128', '24'],
-  },
-  {
-    author: 'Rohan Mehta',
-    handle: '@rohan',
-    time: '31m',
-    text: 'JWT tokens are ready for protected routes. Posts can now belong to a real user instead of a temporary demo account.',
-    accent: 'rose',
-    stats: ['89', '13'],
-  },
-  {
-    author: 'ZOVE System',
-    handle: '@zove',
-    time: '1h',
-    text: 'The backend health endpoint, MySQL configuration, and H2 test database are all part of the base layer.',
-    accent: 'gold',
-    stats: ['204', '42'],
-  },
-]
-
 const navItems = [
-  [Home, 'Home'],
-  [Search, 'Search'],
-  [Bell, 'Notifications'],
-  [MessageCircle, 'Messages'],
-  [Users, 'People'],
+  { id: 'home', Icon: Home, label: 'Home' },
+  { id: 'discover', Icon: Search, label: 'Discover' },
+  { id: 'shorts', Icon: Clapperboard, label: 'Shorts' },
+  { id: 'explore', Icon: Compass, label: 'Explore' },
+  { id: 'circles', Icon: Users, label: 'Circles' },
+  { id: 'chats', Icon: MessageCircle, label: 'Chats' },
+  { id: 'alerts', Icon: Bell, label: 'Alerts' },
+  { id: 'create', Icon: ImagePlus, label: 'Create' },
+]
+
+const viewCopy = {
+  home: ['Home', 'What is moving today?'],
+  discover: ['Discover', 'Find people, circles, and signals.'],
+  shorts: ['Shorts', 'Profile videos playing now.'],
+  explore: ['Explore', 'Visual moments from every corner.'],
+  circles: ['Circles', 'Rooms where your people are live.'],
+  chats: ['Chats', 'Keep the conversation moving.'],
+  alerts: ['Alerts', 'Updates that need your attention.'],
+  create: ['Create', 'Start a pulse.'],
+}
+
+const momentItems = [
+  { name: 'Mira', note: 'Cafe sprint', image: cafeImg, tint: 'aqua' },
+  { name: 'Rohan', note: 'Rain walk', image: streetImg, tint: 'sunset' },
+  { name: 'Studio', note: 'New loop', image: studioImg, tint: 'violet' },
+]
+
+const shortItems = [
+  {
+    id: 'aanya-motion',
+    author: 'Aanya Rao',
+    username: 'aanya.moves',
+    title: 'Campus fit check before the meetup',
+    caption: 'Three cuts, one hallway, and a whole lot of motion notes.',
+    image: studioImg,
+    sound: 'Original audio - Aanya',
+    views: '42K',
+    likes: 12800,
+    comments: 344,
+  },
+  {
+    id: 'kai-street',
+    author: 'Kai Brooks',
+    username: 'kai.frames',
+    title: 'Rainy street frames in 12 seconds',
+    caption: 'Golden reflections, quick steps, and a city that knows its angles.',
+    image: streetImg,
+    sound: 'City loop - Kai',
+    views: '31K',
+    likes: 9300,
+    comments: 211,
+  },
+  {
+    id: 'mira-cafe-short',
+    author: 'Mira Chen',
+    username: 'mira',
+    title: 'Coffee desk reset',
+    caption: 'Tiny reset before a long build session.',
+    image: cafeImg,
+    sound: 'Soft keys - Mira',
+    views: '24K',
+    likes: 7600,
+    comments: 182,
+  },
+]
+
+const initialFeedItems = [
+  {
+    id: 'mira-cafe',
+    author: 'Mira Chen',
+    username: 'mira',
+    time: '12m',
+    circle: 'Daily Makers',
+    image: cafeImg,
+    text: 'A quiet table somehow turned into a launch pad. Shipping the profile flow today, then taking this coffee for a walk.',
+    quote: 'Small rituals keep big projects moving.',
+    reactionCount: 12400,
+    replyCount: 148,
+    shareCount: 382,
+    tags: ['#makers', '#coffee'],
+    comments: [
+      { id: 'mira-comment-1', author: 'Aanya Rao', text: 'This table energy is exactly the push I needed.' },
+    ],
+  },
+  {
+    id: 'rohan-rain',
+    author: 'Rohan Mehta',
+    username: 'rohan',
+    time: '31m',
+    circle: 'City Notes',
+    image: streetImg,
+    text: 'Golden-hour streets after rain are basically a public mood board. Saving this palette for the next ZOVE theme pass.',
+    quote: 'The city after rain has its own filter.',
+    reactionCount: 8900,
+    replyCount: 96,
+    shareCount: 211,
+    tags: ['#streetframes', '#citynotes'],
+    comments: [
+      { id: 'rohan-comment-1', author: 'Kai Brooks', text: 'That warm light on the buildings is unreal.' },
+    ],
+  },
+  {
+    id: 'studio-loop',
+    author: 'ZOVE Studio',
+    username: 'zove.studio',
+    time: '1h',
+    circle: 'Creator Desk',
+    image: studioImg,
+    text: 'Workspace check: one keyboard, one track idea, three open tabs, and a calmer feed surface taking shape.',
+    quote: 'Build the room you want to think inside.',
+    reactionCount: 18200,
+    replyCount: 312,
+    shareCount: 704,
+    tags: ['#studio', '#creatordesk'],
+    comments: [
+      { id: 'studio-comment-1', author: 'Leela Shah', text: 'Calmer feed surface sounds like a win.' },
+    ],
+  },
+]
+
+const feedFilters = [
+  { id: 'all', label: 'All' },
+  { id: 'following', label: 'Following' },
+  { id: 'saved', label: 'Saved' },
+]
+
+const circles = [
+  { name: 'Design Room', meta: '2.8K live', note: 'Screens, logos, product polish, and fast feedback.' },
+  { name: 'Campus Feed', meta: '812 live', note: 'Clubs, classes, late-night food runs, and plans.' },
+  { name: 'Music Makers', meta: '1.4K live', note: 'Loops, playlists, show notes, and studio rooms.' },
+]
+
+const suggestions = [
+  { name: 'Aanya Rao', note: 'movement notes' },
+  { name: 'Kai Brooks', note: 'street frames' },
+  { name: 'Leela Shah', note: 'quiet essays' },
+]
+
+const initialConversations = [
+  {
+    id: 'aanya',
+    name: 'Aanya Rao',
+    handle: 'aanya.moves',
+    status: 'Online',
+    messages: [
+      { id: 'aanya-1', from: 'them', text: 'Are you joining the creator meetup tonight?', time: '7:42 PM' },
+      { id: 'aanya-2', from: 'me', text: 'Yes. I am bringing the new Shorts layout too.', time: '7:44 PM' },
+      { id: 'aanya-3', from: 'them', text: 'Perfect. Send me the preview when it is ready.', time: '7:45 PM' },
+    ],
+  },
+  {
+    id: 'kai',
+    name: 'Kai Brooks',
+    handle: 'kai.frames',
+    status: 'Typing soon',
+    messages: [
+      { id: 'kai-1', from: 'them', text: 'The street frames from yesterday are ready.', time: '6:18 PM' },
+      { id: 'kai-2', from: 'me', text: 'Drop the best one here. I want it for Explore.', time: '6:20 PM' },
+    ],
+  },
+  {
+    id: 'leela',
+    name: 'Leela Shah',
+    handle: 'leela.notes',
+    status: 'Last seen 12m ago',
+    messages: [
+      { id: 'leela-1', from: 'them', text: 'I wrote a quieter caption for the cafe post.', time: '5:03 PM' },
+      { id: 'leela-2', from: 'me', text: 'Nice. Send it here and I will test it in the feed.', time: '5:05 PM' },
+    ],
+  },
+]
+
+const trendingTopics = [
+  { label: '#campus', meta: '18.4K pulses' },
+  { label: '#design', meta: '9.7K pulses' },
+  { label: '#music', meta: '6.2K pulses' },
+  { label: '#coffee', meta: '4.8K pulses' },
+]
+
+const alerts = [
+  'Mira reacted to your cafe sprint.',
+  'Design Room is hosting a quick critique.',
+  'Aanya shared a new movement note.',
 ]
 
 function readStoredAuth() {
@@ -84,11 +240,29 @@ function readStoredAuth() {
   }
 }
 
+function readStoredProfile() {
+  try {
+    return JSON.parse(localStorage.getItem(PROFILE_STORAGE_KEY))
+  } catch {
+    return null
+  }
+}
+
+function getInitial(name) {
+  return (name || 'Z').charAt(0).toUpperCase()
+}
+
+function formatCount(value) {
+  if (value >= 1000) {
+    return `${(value / 1000).toFixed(value >= 10000 ? 1 : 1).replace('.0', '')}K`
+  }
+
+  return String(value)
+}
+
 function App() {
-  const [health, setHealth] = useState({
-    state: 'checking',
-    message: 'Checking backend',
-  })
+  const [activeView, setActiveView] = useState('home')
+  const [theme, setTheme] = useState(() => localStorage.getItem(THEME_STORAGE_KEY) ?? 'light')
   const [authMode, setAuthMode] = useState('register')
   const [authForm, setAuthForm] = useState({
     displayName: '',
@@ -96,55 +270,99 @@ function App() {
     email: '',
     password: '',
   })
+  const [profile, setProfile] = useState(
+    () =>
+      readStoredProfile() ?? {
+        displayName: 'Guest User',
+        username: 'zove_guest',
+        bio: 'Building moments, circles, and signals on ZOVE.',
+      },
+  )
+  const [profileDraft, setProfileDraft] = useState(profile)
+  const [isEditingProfile, setIsEditingProfile] = useState(false)
   const [auth, setAuth] = useState(readStoredAuth)
   const [authStatus, setAuthStatus] = useState({ state: 'idle', message: '' })
+  const [posts, setPosts] = useState(initialFeedItems)
+  const [feedFilter, setFeedFilter] = useState('all')
+  const [composerText, setComposerText] = useState('')
+  const [composerNotice, setComposerNotice] = useState('')
+  const [composerTools, setComposerTools] = useState({
+    moment: false,
+    circle: false,
+    signal: false,
+  })
+  const [activeMoment, setActiveMoment] = useState('')
+  const [activeCircle, setActiveCircle] = useState('All')
+  const [searchQuery, setSearchQuery] = useState('')
+  const [followedPeople, setFollowedPeople] = useState([])
+  const [signalsTuned, setSignalsTuned] = useState(false)
+  const [alertsRead, setAlertsRead] = useState(false)
+  const [openMenu, setOpenMenu] = useState('')
+  const [openComments, setOpenComments] = useState('')
+  const [commentDrafts, setCommentDrafts] = useState({})
+  const [activeShortId, setActiveShortId] = useState(shortItems[0].id)
+  const [playingShorts, setPlayingShorts] = useState([shortItems[0].id])
+  const [likedShorts, setLikedShorts] = useState([])
+  const [savedShorts, setSavedShorts] = useState([])
+  const [conversations, setConversations] = useState(initialConversations)
+  const [activeConversationId, setActiveConversationId] = useState(initialConversations[0].id)
+  const [messageDraft, setMessageDraft] = useState('')
+  const [toast, setToast] = useState('')
+
+  const composerRef = useRef(null)
+  const searchRef = useRef(null)
 
   const currentUser = auth?.user
+  const profileName = profile.displayName || currentUser?.displayName || 'Guest User'
+  const profileHandle = profile.username || currentUser?.username || 'zove_guest'
+  const profileEmail = currentUser?.email ?? 'Sign in to sync your profile'
+  const profileBio = profile.bio || 'Share life as it happens.'
+  const [eyebrow, heading] = viewCopy[activeView]
 
-  async function checkHealth() {
-    setHealth({ state: 'checking', message: 'Checking backend' })
-    try {
-      const { data } = await api.get('/health')
-      setHealth({
-        state: 'online',
-        message: data.message ?? 'Backend online',
-        timestamp: data.timestamp,
-      })
-    } catch {
-      setHealth({
-        state: 'offline',
-        message: 'Backend offline',
-      })
+  const filteredSuggestions = useMemo(() => {
+    const query = searchQuery.trim().toLowerCase()
+
+    if (!query) {
+      return suggestions
     }
-  }
 
-  useEffect(() => {
-    let ignore = false
+    return suggestions.filter(({ name, note }) => `${name} ${note}`.toLowerCase().includes(query))
+  }, [searchQuery])
 
-    api
-      .get('/health')
-      .then(({ data }) => {
-        if (!ignore) {
-          setHealth({
-            state: 'online',
-            message: data.message ?? 'Backend online',
-            timestamp: data.timestamp,
-          })
-        }
-      })
-      .catch(() => {
-        if (!ignore) {
-          setHealth({
-            state: 'offline',
-            message: 'Backend offline',
-          })
-        }
-      })
+  const filteredCircles = useMemo(() => {
+    const query = searchQuery.trim().toLowerCase()
 
-    return () => {
-      ignore = true
+    if (!query) {
+      return circles
     }
-  }, [])
+
+    return circles.filter(({ name, note }) => `${name} ${note}`.toLowerCase().includes(query))
+  }, [searchQuery])
+
+  const filteredTopics = useMemo(() => {
+    const query = searchQuery.trim().toLowerCase().replace('#', '')
+
+    if (!query) {
+      return trendingTopics
+    }
+
+    return trendingTopics.filter(({ label }) => label.toLowerCase().includes(query))
+  }, [searchQuery])
+
+  const visiblePosts = useMemo(() => {
+    if (feedFilter === 'saved') {
+      return posts.filter((post) => post.saved)
+    }
+
+    if (feedFilter === 'following') {
+      return posts.filter((post) => followedPeople.includes(post.author) || post.username === profileHandle)
+    }
+
+    return posts
+  }, [feedFilter, followedPeople, posts, profileHandle])
+
+  const savedPostCount = posts.filter((post) => post.saved).length
+  const activeConversation = conversations.find((conversation) => conversation.id === activeConversationId) ?? conversations[0]
 
   useEffect(() => {
     if (!auth?.token) {
@@ -172,9 +390,102 @@ function App() {
     }
   }, [auth?.token])
 
+  useEffect(() => {
+    if (!toast) {
+      return undefined
+    }
+
+    const timeoutId = window.setTimeout(() => setToast(''), 2200)
+
+    return () => window.clearTimeout(timeoutId)
+  }, [toast])
+
+  useEffect(() => {
+    localStorage.setItem(PROFILE_STORAGE_KEY, JSON.stringify(profile))
+  }, [profile])
+
+  useEffect(() => {
+    localStorage.setItem(THEME_STORAGE_KEY, theme)
+  }, [theme])
+
+  function showToast(message) {
+    setToast(message)
+  }
+
+  function toggleTheme() {
+    const nextTheme = theme === 'dark' ? 'light' : 'dark'
+    setTheme(nextTheme)
+    showToast(nextTheme === 'dark' ? 'Dark mode on' : 'Light mode on')
+  }
+
+  function selectView(viewId) {
+    setActiveView(viewId)
+    setOpenMenu('')
+
+    if (viewId === 'create') {
+      window.setTimeout(() => composerRef.current?.focus(), 0)
+    }
+
+    if (viewId === 'discover') {
+      window.setTimeout(() => searchRef.current?.focus(), 0)
+    }
+  }
+
+  function selectShort(shortId) {
+    setActiveShortId(shortId)
+    setPlayingShorts((items) => (items.includes(shortId) ? items : [...items, shortId]))
+  }
+
+  function toggleShortPlayback(shortId) {
+    setPlayingShorts((items) => (
+      items.includes(shortId) ? items.filter((itemId) => itemId !== shortId) : [...items, shortId]
+    ))
+  }
+
+  function toggleShortLike(shortId) {
+    setLikedShorts((items) => (
+      items.includes(shortId) ? items.filter((itemId) => itemId !== shortId) : [...items, shortId]
+    ))
+  }
+
+  function toggleShortSave(shortId) {
+    const isSaved = savedShorts.includes(shortId)
+    setSavedShorts((items) => (
+      isSaved ? items.filter((itemId) => itemId !== shortId) : [...items, shortId]
+    ))
+    showToast(isSaved ? 'Short removed from saved' : 'Short saved')
+  }
+
   function updateAuthForm(event) {
     const { name, value } = event.target
     setAuthForm((form) => ({ ...form, [name]: value }))
+  }
+
+  function updateProfileDraft(event) {
+    const { name, value } = event.target
+    setProfileDraft((draft) => ({ ...draft, [name]: value }))
+  }
+
+  function saveProfile(event) {
+    event.preventDefault()
+    setProfile({
+      displayName: profileDraft.displayName.trim() || 'Guest User',
+      username: profileDraft.username.trim().replace(/^@/, '') || 'zove_guest',
+      bio: profileDraft.bio.trim() || 'Share life as it happens.',
+    })
+    setIsEditingProfile(false)
+    showToast('Profile updated')
+  }
+
+  function cancelProfileEdit() {
+    setProfileDraft(profile)
+    setIsEditingProfile(false)
+  }
+
+  function chooseFeedFilter(filterId) {
+    setFeedFilter(filterId)
+    setActiveView('home')
+    showToast(filterId === 'saved' ? 'Showing saved posts' : `${feedFilters.find(({ id }) => id === filterId)?.label} feed`)
   }
 
   async function submitAuth(event) {
@@ -197,6 +508,7 @@ function App() {
         state: 'success',
         message: authMode === 'register' ? 'Account created' : 'Signed in',
       })
+      showToast(authMode === 'register' ? 'Account created' : 'Signed in')
     } catch (error) {
       const message =
         error.response?.data?.detail ??
@@ -211,138 +523,744 @@ function App() {
     localStorage.removeItem(AUTH_STORAGE_KEY)
     setAuth(null)
     setAuthStatus({ state: 'idle', message: '' })
+    showToast('Signed out')
+  }
+
+  function toggleComposerTool(tool) {
+    setComposerTools((tools) => ({ ...tools, [tool]: !tools[tool] }))
+    setActiveView('create')
+  }
+
+  function chooseMoment(moment) {
+    setActiveMoment(moment.name)
+    setComposerTools((tools) => ({ ...tools, moment: true }))
+    setComposerText((text) => text || `${moment.note}: `)
+    setActiveView('create')
+    window.setTimeout(() => composerRef.current?.focus(), 0)
+    showToast(`${moment.name}'s moment attached`)
+  }
+
+  function publishPost() {
+    const text = composerText.trim()
+
+    if (!text) {
+      setComposerNotice('Write something before publishing.')
+      composerRef.current?.focus()
+      return
+    }
+
+    const selectedMoment = momentItems.find((moment) => moment.name === activeMoment)
+    const newPost = {
+      id: `local-${Date.now()}`,
+      author: profileName,
+      username: profileHandle,
+      time: 'now',
+      circle: composerTools.circle ? activeCircle === 'All' ? 'Your Circle' : activeCircle : 'Home',
+      image: composerTools.moment ? selectedMoment?.image ?? cafeImg : undefined,
+      text,
+      quote: composerTools.signal ? 'Fresh signal from your circle.' : '',
+      reactionCount: 0,
+      replyCount: 0,
+      shareCount: 0,
+      tags: composerTools.signal ? ['#signal'] : ['#pulse'],
+      comments: [],
+      liked: false,
+      shared: false,
+      saved: false,
+    }
+
+    setPosts((items) => [newPost, ...items])
+    setComposerText('')
+    setComposerNotice('Published to your home feed.')
+    setComposerTools({ moment: false, circle: false, signal: false })
+    setActiveMoment('')
+    setActiveView('home')
+    showToast('Pulse published')
+  }
+
+  function updateCommentDraft(postId, value) {
+    setCommentDrafts((drafts) => ({ ...drafts, [postId]: value }))
+  }
+
+  function toggleComments(postId) {
+    setOpenComments((currentPostId) => (currentPostId === postId ? '' : postId))
+  }
+
+  function submitComment(event, item) {
+    event.preventDefault()
+
+    const text = commentDrafts[item.id]?.trim()
+
+    if (!text) {
+      showToast('Write a comment first')
+      return
+    }
+
+    updatePost(item.id, (post) => ({
+      ...post,
+      replyCount: post.replyCount + 1,
+      comments: [
+        ...(post.comments ?? []),
+        {
+          id: `${post.id}-comment-${Date.now()}`,
+          author: profileName,
+          text,
+        },
+      ],
+    }))
+    setCommentDrafts((drafts) => ({ ...drafts, [item.id]: '' }))
+    setOpenComments(item.id)
+    showToast('Comment added')
+  }
+
+  function updatePost(postId, updater) {
+    setPosts((items) => items.map((item) => (item.id === postId ? updater(item) : item)))
+  }
+
+  function toggleLike(postId) {
+    updatePost(postId, (item) => ({
+      ...item,
+      liked: !item.liked,
+      reactionCount: item.reactionCount + (item.liked ? -1 : 1),
+    }))
+  }
+
+  function sharePost(postId) {
+    updatePost(postId, (item) => ({
+      ...item,
+      shared: true,
+      shareCount: item.shareCount + (item.shared ? 0 : 1),
+    }))
+    showToast('Shared to your circle')
+  }
+
+  function toggleSave(postId) {
+    updatePost(postId, (item) => ({ ...item, saved: !item.saved }))
+  }
+
+  function copyPostLink(postId) {
+    const link = `${window.location.origin}/post/${postId}`
+    navigator.clipboard?.writeText(link).catch(() => undefined)
+    setOpenMenu('')
+    showToast('Post link copied')
+  }
+
+  function selectCircle(name) {
+    setActiveCircle(name)
+    setComposerTools((tools) => ({ ...tools, circle: name !== 'All' }))
+    setActiveView('circles')
+    showToast(name === 'All' ? 'Showing all circles' : `${name} selected`)
+  }
+
+  function toggleFollow(name) {
+    const isFollowed = followedPeople.includes(name)
+
+    setFollowedPeople((people) => (isFollowed ? people.filter((person) => person !== name) : [...people, name]))
+    showToast(isFollowed ? `${name} removed` : `${name} added`)
+  }
+
+  function selectTopic(label) {
+    setSearchQuery(label.replace('#', ''))
+    setActiveView('discover')
+    window.setTimeout(() => searchRef.current?.focus(), 0)
+    showToast(`${label} opened`)
+  }
+
+  function sendChatMessage(event) {
+    event.preventDefault()
+
+    const text = messageDraft.trim()
+
+    if (!text) {
+      showToast('Type a message first')
+      return
+    }
+
+    const newMessage = {
+      id: `${activeConversationId}-${Date.now()}`,
+      from: 'me',
+      text,
+      time: new Date().toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }),
+    }
+
+    setConversations((items) =>
+      items.map((conversation) =>
+        conversation.id === activeConversationId
+          ? { ...conversation, messages: [...conversation.messages, newMessage] }
+          : conversation,
+      ),
+    )
+    setMessageDraft('')
+  }
+
+  function renderViewPanel() {
+    if (activeView === 'home' || activeView === 'create') {
+      return null
+    }
+
+    if (activeView === 'discover') {
+      return (
+        <section className="view-panel" aria-label="Discover tools">
+          <label className="search-box">
+            <Search size={18} />
+            <input
+              ref={searchRef}
+              type="search"
+              value={searchQuery}
+              onChange={(event) => setSearchQuery(event.target.value)}
+              placeholder="Search people and circles"
+            />
+          </label>
+          <div className="chip-grid">
+            {filteredSuggestions.map(({ name, note }) => (
+              <button type="button" key={name} onClick={() => toggleFollow(name)}>
+                <span className="avatar tiny">{getInitial(name)}</span>
+                <span>
+                  <strong>{name}</strong>
+                  <small>{followedPeople.includes(name) ? 'Following' : note}</small>
+                </span>
+              </button>
+            ))}
+          </div>
+          <div className="trend-list compact">
+            {filteredTopics.map(({ label, meta }) => (
+              <button type="button" key={label} onClick={() => selectTopic(label)}>
+                <span>{label}</span>
+                <small>{meta}</small>
+              </button>
+            ))}
+          </div>
+        </section>
+      )
+    }
+
+    if (activeView === 'shorts') {
+      return (
+        <section className="shorts-view" aria-label="ZOVE shorts">
+          <div className="shorts-rail" aria-label="Shorts list">
+            {shortItems.map((short) => {
+              const isActive = activeShortId === short.id
+              const isPlaying = playingShorts.includes(short.id)
+              const isLiked = likedShorts.includes(short.id)
+              const isSaved = savedShorts.includes(short.id)
+              const isFollowed = followedPeople.includes(short.author)
+
+              return (
+                <article
+                  className={`short-card ${isActive ? 'active' : ''}`}
+                  key={short.id}
+                  onMouseEnter={() => selectShort(short.id)}
+                >
+                  <button
+                    className="short-video"
+                    type="button"
+                    onClick={() => toggleShortPlayback(short.id)}
+                    aria-label={`${isPlaying ? 'Pause' : 'Play'} ${short.title}`}
+                  >
+                    <img src={short.image} alt="" />
+                    <span className="short-gradient" />
+                    <span className="short-play-state">
+                      {isPlaying ? <Pause size={20} /> : <Play size={20} />}
+                      {isPlaying ? 'Playing' : 'Paused'}
+                    </span>
+                    <span className="short-progress" />
+                    <span className="short-copy">
+                      <strong>{short.title}</strong>
+                      <small>@{short.username} · {short.views} views</small>
+                    </span>
+                  </button>
+
+                  <div className="short-actions">
+                    <button className={isLiked ? 'active' : ''} type="button" onClick={() => toggleShortLike(short.id)}>
+                      <Heart size={18} />
+                      {formatCount(short.likes + (isLiked ? 1 : 0))}
+                    </button>
+                    <button type="button" onClick={() => {
+                      setComposerText(`@${short.username} `)
+                      setActiveView('create')
+                      window.setTimeout(() => composerRef.current?.focus(), 0)
+                    }}>
+                      <MessageCircle size={18} />
+                      {formatCount(short.comments)}
+                    </button>
+                    <button className={isSaved ? 'active' : ''} type="button" onClick={() => toggleShortSave(short.id)}>
+                      <Bookmark size={18} />
+                      {isSaved ? 'Saved' : 'Save'}
+                    </button>
+                    <button className={isFollowed ? 'active' : ''} type="button" onClick={() => toggleFollow(short.author)}>
+                      <UserPlus size={18} />
+                      {isFollowed ? 'Following' : 'Follow'}
+                    </button>
+                  </div>
+
+                  <footer className="short-footer">
+                    <div className="avatar tiny">{getInitial(short.author)}</div>
+                    <div>
+                      <strong>{short.author}</strong>
+                      <p>{short.caption}</p>
+                      <small>{short.sound}</small>
+                    </div>
+                  </footer>
+                </article>
+              )
+            })}
+          </div>
+        </section>
+      )
+    }
+
+    if (activeView === 'explore') {
+      return (
+        <section className="view-panel compact" aria-label="Explore filters">
+          {momentItems.map((moment) => (
+            <button type="button" className="info-button" key={moment.name} onClick={() => chooseMoment(moment)}>
+              <ImagePlus size={18} />
+              Attach {moment.name}
+            </button>
+          ))}
+        </section>
+      )
+    }
+
+    if (activeView === 'circles') {
+      return (
+        <section className="view-panel" aria-label="Circle details">
+          <div>
+            <p className="eyebrow">{activeCircle}</p>
+            <h2>{activeCircle === 'All' ? 'All live circles' : circles.find(({ name }) => name === activeCircle)?.note}</h2>
+          </div>
+          <div className="chip-grid">
+            {filteredCircles.map(({ name, meta }) => (
+              <button type="button" key={name} onClick={() => selectCircle(name)}>
+                <span className="circle-icon"><Users size={17} /></span>
+                <span>
+                  <strong>{name}</strong>
+                  <small>{meta}</small>
+                </span>
+              </button>
+            ))}
+          </div>
+        </section>
+      )
+    }
+
+    if (activeView === 'chats') {
+      return (
+        <section className="chat-shell" aria-label="Chats">
+          <div className="chat-list" aria-label="Conversations">
+            {conversations.map((conversation) => {
+              const lastMessage = conversation.messages.at(-1)
+              const isActive = activeConversation.id === conversation.id
+
+              return (
+                <button
+                  className={`chat-contact ${isActive ? 'active' : ''}`}
+                  type="button"
+                  key={conversation.id}
+                  onClick={() => setActiveConversationId(conversation.id)}
+                >
+                  <span className="avatar tiny">{getInitial(conversation.name)}</span>
+                  <span>
+                    <strong>{conversation.name}</strong>
+                    <small>{lastMessage?.text}</small>
+                  </span>
+                  <em>{lastMessage?.time}</em>
+                </button>
+              )
+            })}
+          </div>
+
+          <div className="chat-window">
+            <header className="chat-header">
+              <div className="avatar small">{getInitial(activeConversation.name)}</div>
+              <div>
+                <h2>{activeConversation.name}</h2>
+                <p>@{activeConversation.handle} · {activeConversation.status}</p>
+              </div>
+            </header>
+
+            <div className="chat-thread" aria-label={`Conversation with ${activeConversation.name}`}>
+              {activeConversation.messages.map((message) => (
+                <div className={`chat-message ${message.from === 'me' ? 'mine' : ''}`} key={message.id}>
+                  <p>{message.text}</p>
+                  <time>{message.time}</time>
+                </div>
+              ))}
+            </div>
+
+            <form className="chat-input" onSubmit={sendChatMessage}>
+              <input
+                value={messageDraft}
+                onChange={(event) => setMessageDraft(event.target.value)}
+                placeholder={`Message ${activeConversation.name}`}
+              />
+              <button type="submit">
+                <Send size={18} />
+                Send
+              </button>
+            </form>
+          </div>
+        </section>
+      )
+    }
+
+    if (activeView === 'alerts') {
+      return (
+        <section className="view-panel" aria-label="Alerts">
+          <div className="rail-heading">
+            <h2>{alertsRead ? 'All caught up' : `${alerts.length} new alerts`}</h2>
+            <button type="button" onClick={() => {
+              setAlertsRead(true)
+              showToast('Alerts marked as read')
+            }}>
+              Mark read
+            </button>
+          </div>
+          <div className="mini-list">
+            {(alertsRead ? ['No new alerts right now.'] : alerts).map((alert) => (
+              <p key={alert}>{alert}</p>
+            ))}
+          </div>
+        </section>
+      )
+    }
+
+    return null
   }
 
   return (
-    <div className="app-shell">
-      <aside className="sidebar">
+    <div className={`app-shell ${theme === 'dark' ? 'theme-dark' : ''} ${activeView === 'chats' ? 'chat-mode' : ''}`}>
+      <aside className="side-dock">
         <div className="brand" aria-label="ZOVE">
-          <span className="brand-mark">Z</span>
-          <span className="brand-name">ZOVE</span>
+          <span className="brand-mark">
+            <img src={zoveMark} alt="" />
+          </span>
+          <span>
+            <strong>ZOVE</strong>
+            <small>Share life as it happens.</small>
+          </span>
         </div>
 
         <nav className="nav" aria-label="Primary navigation">
-          {navItems.map(([Icon, label], index) => (
+          {navItems.map(({ Icon, id, label }) => (
             <button
-              className={`icon-button ${index === 0 ? 'active' : ''}`}
+              className={`nav-button ${activeView === id ? 'active' : ''}`}
               type="button"
-              aria-label={label}
-              title={label}
-              key={label}
+              key={id}
+              onClick={() => selectView(id)}
+              aria-current={activeView === id ? 'page' : undefined}
             >
-              <Icon size={20} />
+              <Icon size={21} />
+              <span>{label}</span>
             </button>
           ))}
         </nav>
-
-        <button
-          className={`health-chip ${health.state}`}
-          type="button"
-          onClick={checkHealth}
-          title="Refresh backend status"
-        >
-          {health.state === 'checking' ? <Loader2 size={16} /> : <ShieldCheck size={16} />}
-          <span>{health.state === 'online' ? 'API' : health.state}</span>
-        </button>
       </aside>
 
-      <main className="feed-column">
-        <header className="feed-header">
+      <main className="pulse-column">
+        <header className="top-bar">
           <div>
-            <p className="eyebrow">Social workspace</p>
-            <h1>ZOVE</h1>
+            <p className="eyebrow">{eyebrow}</p>
+            <h1>{heading}</h1>
           </div>
-          <button className="text-button" type="button" onClick={checkHealth}>
-            <RefreshCw size={18} />
-            Sync
-          </button>
+          <div className="top-actions">
+            <button className="ghost-button" type="button" onClick={() => chooseFeedFilter('saved')}>
+              <Bookmark size={17} />
+              Saved {savedPostCount ? savedPostCount : ''}
+            </button>
+            <button
+              className="icon-button theme-button"
+              type="button"
+              onClick={toggleTheme}
+              aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+            >
+              {theme === 'dark' ? <Sun size={19} /> : <Moon size={19} />}
+            </button>
+          </div>
         </header>
 
-        <section className="composer" aria-label="Create post">
-          <div className="avatar">
-            {currentUser ? currentUser.displayName.charAt(0).toUpperCase() : 'Z'}
-          </div>
-          <div className="composer-body">
-            <textarea
-              rows="3"
-              placeholder={currentUser ? 'Share an update' : 'Sign in to post'}
-              disabled={!currentUser}
-            />
-            <div className="composer-actions">
-              <div className="tool-row">
-                <button className="icon-button small" type="button" aria-label="Add image" title="Add image">
-                  <ImagePlus size={18} />
-                </button>
-                <button className="icon-button small" type="button" aria-label="Open camera" title="Open camera">
-                  <Camera size={18} />
-                </button>
-              </div>
-              <button className="post-button" type="button" disabled={!currentUser}>
-                <Send size={17} />
-                Post
-              </button>
-            </div>
-          </div>
-        </section>
+        {renderViewPanel()}
 
-        <section className="feed-list" aria-label="Home feed">
-          {feedItems.map((item) => (
-            <article className={`post-card ${item.accent}`} key={item.author}>
-              <div className="post-top">
-                <div className="avatar compact">{item.author.charAt(0)}</div>
-                <div>
-                  <h2>{item.author}</h2>
-                  <p>{item.handle} · {item.time}</p>
+        {!['chats', 'shorts'].includes(activeView) && (
+          <>
+            <section className="composer" aria-label="Create post">
+              <div className="avatar current">{getInitial(profileName)}</div>
+              <div className="composer-body">
+                <textarea
+                  ref={composerRef}
+                  rows="3"
+                  value={composerText}
+                  onChange={(event) => {
+                    setComposerText(event.target.value)
+                    setComposerNotice('')
+                  }}
+                  placeholder="Start a pulse"
+                />
+                <div className="composer-actions">
+                  <div className="composer-tools">
+                    <button
+                      className={composerTools.moment ? 'selected' : ''}
+                      type="button"
+                      onClick={() => toggleComposerTool('moment')}
+                      aria-pressed={composerTools.moment}
+                    >
+                      <ImagePlus size={18} />
+                      Moment
+                    </button>
+                    <button
+                      className={composerTools.circle ? 'selected' : ''}
+                      type="button"
+                      onClick={() => toggleComposerTool('circle')}
+                      aria-pressed={composerTools.circle}
+                    >
+                      <Users size={18} />
+                      Circle
+                    </button>
+                    <button
+                      className={composerTools.signal ? 'selected' : ''}
+                      type="button"
+                      onClick={() => toggleComposerTool('signal')}
+                      aria-pressed={composerTools.signal}
+                    >
+                      <Sparkles size={18} />
+                      Signal
+                    </button>
+                  </div>
+                  <button className="post-button" type="button" onClick={publishPost}>
+                    <Send size={17} />
+                    Publish
+                  </button>
                 </div>
+                {composerNotice && <p className="composer-note">{composerNotice}</p>}
               </div>
-              <p className="post-text">{item.text}</p>
-              <div className="post-actions">
-                <button type="button">
-                  <Heart size={17} />
-                  {item.stats[0]}
+            </section>
+
+            <section className="moments-strip" aria-label="Moments">
+              {momentItems.map((moment) => (
+                <button
+                  className={`moment-card ${moment.tint} ${activeMoment === moment.name ? 'selected' : ''}`}
+                  type="button"
+                  key={moment.name}
+                  onClick={() => chooseMoment(moment)}
+                >
+                  <img src={moment.image} alt="" />
+                  <span>
+                    <strong>{moment.name}</strong>
+                    <small>{moment.note}</small>
+                  </span>
                 </button>
-                <button type="button">
-                  <MessageCircle size={17} />
-                  {item.stats[1]}
-                </button>
+              ))}
+            </section>
+
+            <section className="feed-controls" aria-label="Feed filters">
+              <div className="segmented feed-tabs">
+                {feedFilters.map(({ id, label }) => (
+              <button
+                className={feedFilter === id ? 'selected' : ''}
+                type="button"
+                key={id}
+                onClick={() => chooseFeedFilter(id)}
+              >
+                {label}
+              </button>
+                ))}
               </div>
-            </article>
-          ))}
-        </section>
+              <span>{visiblePosts.length} pulses</span>
+            </section>
+
+            <section className="feed-list" aria-label="ZOVE pulse feed">
+              {visiblePosts.length === 0 && (
+                <div className="empty-state">
+                  <Bookmark size={22} />
+                  <strong>No pulses here yet</strong>
+                  <p>{feedFilter === 'saved' ? 'Save a post to build your collection.' : 'Follow creators to shape this feed.'}</p>
+                </div>
+              )}
+
+              {visiblePosts.map((item) => (
+                <article className="pulse-card" key={item.id}>
+                  <header className="pulse-header">
+                    <div className="avatar small">{getInitial(item.author)}</div>
+                    <div className="pulse-meta">
+                      <h2>{item.author}</h2>
+                      <p>@{item.username} · {item.circle}</p>
+                    </div>
+                    <time>{item.time}</time>
+                    <div className="more-wrap">
+                      <button
+                        className="icon-button"
+                        type="button"
+                        aria-label={`More options for ${item.author}`}
+                        aria-expanded={openMenu === item.id}
+                        onClick={() => setOpenMenu((menuId) => (menuId === item.id ? '' : item.id))}
+                      >
+                        <MoreHorizontal size={21} />
+                      </button>
+                      {openMenu === item.id && (
+                        <div className="more-menu">
+                          <button type="button" onClick={() => copyPostLink(item.id)}>Copy link</button>
+                          <button type="button" onClick={() => {
+                            setOpenMenu('')
+                            showToast(`${item.author} muted`)
+                          }}>
+                            Mute updates
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  </header>
+
+                  <p className="pulse-text">{item.text}</p>
+
+                  {(item.image || item.quote) && (
+                    <div className="media-frame">
+                      {item.image && <img src={item.image} alt={`${item.author} shared moment`} />}
+                      {item.quote && <blockquote>{item.quote}</blockquote>}
+                    </div>
+                  )}
+
+                  <footer className="pulse-actions">
+                    <button className={item.liked ? 'active' : ''} type="button" onClick={() => toggleLike(item.id)}>
+                      <Heart size={19} />
+                      {formatCount(item.reactionCount)}
+                    </button>
+                    <button className={openComments === item.id ? 'active' : ''} type="button" onClick={() => toggleComments(item.id)}>
+                      <MessageCircle size={19} />
+                      {formatCount(item.replyCount)}
+                    </button>
+                    <button className={item.shared ? 'active' : ''} type="button" onClick={() => sharePost(item.id)}>
+                      <Repeat2 size={19} />
+                      {formatCount(item.shareCount)}
+                    </button>
+                    <button className={item.saved ? 'active' : ''} type="button" onClick={() => toggleSave(item.id)}>
+                      <Bookmark size={19} />
+                      {item.saved ? 'Saved' : 'Save'}
+                    </button>
+                  </footer>
+
+                  {openComments === item.id && (
+                    <section className="comments-panel" aria-label={`Comments on ${item.author}'s post`}>
+                      <div className="comment-list">
+                        {(item.comments ?? []).map((comment) => (
+                          <div className="comment-row" key={comment.id}>
+                            <span className="avatar tiny">{getInitial(comment.author)}</span>
+                            <p>
+                              <strong>{comment.author}</strong>
+                              {comment.text}
+                            </p>
+                          </div>
+                        ))}
+                      </div>
+                      <form className="comment-form" onSubmit={(event) => submitComment(event, item)}>
+                        <input
+                          value={commentDrafts[item.id] ?? ''}
+                          onChange={(event) => updateCommentDraft(item.id, event.target.value)}
+                          placeholder={`Comment on ${item.author}'s pulse`}
+                        />
+                        <button type="submit">
+                          <Send size={16} />
+                        </button>
+                      </form>
+                    </section>
+                  )}
+                </article>
+              ))}
+            </section>
+          </>
+        )}
       </main>
 
-      <aside className="side-panel">
-        <section className="account-panel">
-          <div className="panel-heading">
-            <Lock size={19} />
-            <h2>{currentUser ? 'Account' : 'Authentication'}</h2>
+      <aside className="right-rail">
+        <section className="profile-panel">
+          <div className="profile-row">
+            <div className="avatar profile">{getInitial(profileName)}</div>
+            <div>
+              <h2>{profileName}</h2>
+              <p>@{profileHandle}</p>
+              <p>{profileEmail}</p>
+            </div>
+          </div>
+          <p className="profile-bio">{profileBio}</p>
+
+          <div className="profile-actions">
+            <button
+              className="outline-button"
+              type="button"
+              onClick={() => {
+                setProfileDraft(profile)
+                setIsEditingProfile(true)
+              }}
+            >
+              <PenLine size={17} />
+              Edit profile
+            </button>
+            <button className="outline-button" type="button" onClick={() => chooseFeedFilter('saved')}>
+              <Bookmark size={17} />
+              Saved
+            </button>
           </div>
 
-          {currentUser ? (
-            <div className="signed-in">
-              <div className="profile-strip">
-                <img src={heroImg} alt="" />
-                <div className="avatar profile-avatar">
-                  {currentUser.displayName.charAt(0).toUpperCase()}
-                </div>
+          {isEditingProfile && (
+            <form className="profile-editor" onSubmit={saveProfile}>
+              <label>
+                Display name
+                <input
+                  name="displayName"
+                  value={profileDraft.displayName}
+                  onChange={updateProfileDraft}
+                  minLength="2"
+                  maxLength="80"
+                  required
+                />
+              </label>
+              <label>
+                Username
+                <input
+                  name="username"
+                  value={profileDraft.username}
+                  onChange={updateProfileDraft}
+                  minLength="3"
+                  maxLength="40"
+                  pattern="[a-zA-Z0-9_]+"
+                  required
+                />
+              </label>
+              <label>
+                Bio
+                <input name="bio" value={profileDraft.bio} onChange={updateProfileDraft} maxLength="120" />
+              </label>
+              <div className="profile-editor-actions">
+                <button className="submit-button" type="submit">
+                  <Check size={17} />
+                  Save
+                </button>
+                <button className="outline-button" type="button" onClick={cancelProfileEdit}>
+                  <X size={17} />
+                  Cancel
+                </button>
               </div>
-              <h3>{currentUser.displayName}</h3>
-              <p>@{currentUser.username}</p>
-              <p>{currentUser.email}</p>
-              <button className="text-button full" type="button" onClick={logout}>
-                <LogOut size={18} />
-                Sign out
-              </button>
-            </div>
+            </form>
+          )}
+
+          {currentUser ? (
+            <button className="outline-button" type="button" onClick={logout}>
+              <LogOut size={18} />
+              Sign out
+            </button>
           ) : (
             <form className="auth-form" onSubmit={submitAuth}>
+              <div className="panel-heading">
+                <Lock size={18} />
+                <h3>{authMode === 'register' ? 'Join ZOVE' : 'Welcome back'}</h3>
+              </div>
+
               <div className="segmented" role="tablist" aria-label="Authentication mode">
                 <button
                   type="button"
                   className={authMode === 'register' ? 'selected' : ''}
                   onClick={() => setAuthMode('register')}
                 >
-                  <UserPlus size={17} />
+                  <UserPlus size={16} />
                   Register
                 </button>
                 <button
@@ -350,7 +1268,7 @@ function App() {
                   className={authMode === 'login' ? 'selected' : ''}
                   onClick={() => setAuthMode('login')}
                 >
-                  <LogIn size={17} />
+                  <LogIn size={16} />
                   Login
                 </button>
               </div>
@@ -385,13 +1303,7 @@ function App() {
 
               <label>
                 Email
-                <input
-                  name="email"
-                  type="email"
-                  value={authForm.email}
-                  onChange={updateAuthForm}
-                  required
-                />
+                <input name="email" type="email" value={authForm.email} onChange={updateAuthForm} required />
               </label>
               <label>
                 Password
@@ -410,39 +1322,93 @@ function App() {
                 {authMode === 'register' ? 'Create account' : 'Sign in'}
               </button>
 
-              {authStatus.message && (
-                <p className={`form-status ${authStatus.state}`}>{authStatus.message}</p>
-              )}
+              {authStatus.message && <p className={`form-status ${authStatus.state}`}>{authStatus.message}</p>}
             </form>
           )}
         </section>
 
-        <section className="status-panel">
-          <div className="panel-heading">
-            <CheckCircle2 size={19} />
-            <h2>Roadmap</h2>
+        <section className="circles-panel">
+          <div className="rail-heading">
+            <h3>Live circles</h3>
+            <button
+              className={activeCircle === 'All' ? 'active' : ''}
+              type="button"
+              onClick={() => selectCircle('All')}
+            >
+              All
+            </button>
           </div>
-          <ol className="roadmap">
-            {roadmapItems.map(([label, state]) => (
-              <li className={state} key={label}>
-                <span>{label}</span>
-                <strong>{state}</strong>
-              </li>
-            ))}
-          </ol>
+          {circles.map(({ name, meta }) => (
+            <button
+              className={`circle-row ${activeCircle === name ? 'active' : ''}`}
+              type="button"
+              key={name}
+              onClick={() => selectCircle(name)}
+            >
+              <span className="circle-icon"><Users size={17} /></span>
+              <span>
+                <strong>{name}</strong>
+                <small>{meta}</small>
+              </span>
+            </button>
+          ))}
         </section>
 
-        <section className="api-panel">
-          <div>
-            <p className="eyebrow">Backend</p>
-            <h2>{health.message}</h2>
-            {health.timestamp && <p>{new Date(health.timestamp).toLocaleString()}</p>}
+        <section className="trends-panel">
+          <div className="rail-heading">
+            <h3>Trending</h3>
+            <Hash size={18} />
           </div>
-          <button className="icon-button" type="button" onClick={checkHealth} aria-label="Refresh API status">
-            <RefreshCw size={18} />
+          <div className="trend-list">
+            {trendingTopics.map(({ label, meta }) => (
+              <button type="button" key={label} onClick={() => selectTopic(label)}>
+                <span>{label}</span>
+                <small>{meta}</small>
+              </button>
+            ))}
+          </div>
+        </section>
+
+        <section className="signals-panel">
+          <div className="rail-heading">
+            <h3>Signals</h3>
+            <button
+              className={signalsTuned ? 'active' : ''}
+              type="button"
+              onClick={() => {
+                setSignalsTuned((value) => !value)
+                showToast(signalsTuned ? 'Signals reset' : 'Signals tuned')
+              }}
+            >
+              {signalsTuned ? 'Tuned' : 'Tune'}
+            </button>
+          </div>
+          <button className="signal-row" type="button" onClick={() => showToast('Creator meetup saved')}>
+            <CalendarDays size={18} />
+            <span>Creator meetup tonight</span>
           </button>
+          {suggestions.map(({ name, note }) => {
+            const isFollowed = followedPeople.includes(name)
+
+            return (
+              <div className="suggestion-row" key={name}>
+                <div className="avatar tiny">{getInitial(name)}</div>
+                <div>
+                  <strong>{name}</strong>
+                  <p>{note}</p>
+                </div>
+                <button className={isFollowed ? 'added' : ''} type="button" onClick={() => toggleFollow(name)}>
+                  {isFollowed ? 'Added' : 'Add'}
+                </button>
+              </div>
+            )
+          })}
         </section>
       </aside>
+
+      <div className={`toast ${toast ? 'visible' : ''}`} role="status" aria-live="polite">
+        {toast}
+      </div>
     </div>
   )
 }
