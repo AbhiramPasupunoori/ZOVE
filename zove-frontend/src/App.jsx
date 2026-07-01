@@ -65,7 +65,7 @@ const viewCopy = {
   circles: ['Circles', 'Rooms where your people are live.'],
   chats: ['Chats', 'Keep the conversation moving.'],
   alerts: ['Alerts', 'Updates that need your attention.'],
-  create: ['Create', 'Start a pulse.'],
+  create: ['Create', 'Share something new.'],
 }
 
 const momentItems = [
@@ -220,10 +220,10 @@ const initialConversations = [
 ]
 
 const trendingTopics = [
-  { label: '#campus', meta: '18.4K pulses' },
-  { label: '#design', meta: '9.7K pulses' },
-  { label: '#music', meta: '6.2K pulses' },
-  { label: '#coffee', meta: '4.8K pulses' },
+  { label: '#campus', meta: '18.4K posts' },
+  { label: '#design', meta: '9.7K posts' },
+  { label: '#music', meta: '6.2K posts' },
+  { label: '#coffee', meta: '4.8K posts' },
 ]
 
 const alerts = [
@@ -562,7 +562,7 @@ function App() {
       reactionCount: 0,
       replyCount: 0,
       shareCount: 0,
-      tags: composerTools.signal ? ['#signal'] : ['#pulse'],
+      tags: composerTools.signal ? ['#signal'] : ['#zove'],
       comments: [],
       liked: false,
       shared: false,
@@ -575,7 +575,7 @@ function App() {
     setComposerTools({ moment: false, circle: false, signal: false })
     setActiveMoment('')
     setActiveView('home')
-    showToast('Pulse published')
+    showToast('Post published')
   }
 
   function updateCommentDraft(postId, value) {
@@ -957,7 +957,7 @@ function App() {
         </nav>
       </aside>
 
-      <main className="pulse-column">
+      <main className="feed-column">
         <header className="top-bar">
           <div>
             <p className="eyebrow">{eyebrow}</p>
@@ -994,7 +994,7 @@ function App() {
                     setComposerText(event.target.value)
                     setComposerNotice('')
                   }}
-                  placeholder="Start a pulse"
+                  placeholder="Share something new"
                 />
                 <div className="composer-actions">
                   <div className="composer-tools">
@@ -1065,23 +1065,23 @@ function App() {
               </button>
                 ))}
               </div>
-              <span>{visiblePosts.length} pulses</span>
+              <span>{visiblePosts.length} posts</span>
             </section>
 
-            <section className="feed-list" aria-label="ZOVE pulse feed">
+            <section className="feed-list" aria-label="ZOVE feed">
               {visiblePosts.length === 0 && (
                 <div className="empty-state">
                   <Bookmark size={22} />
-                  <strong>No pulses here yet</strong>
+                  <strong>No posts here yet</strong>
                   <p>{feedFilter === 'saved' ? 'Save a post to build your collection.' : 'Follow creators to shape this feed.'}</p>
                 </div>
               )}
 
               {visiblePosts.map((item) => (
-                <article className="pulse-card" key={item.id}>
-                  <header className="pulse-header">
+                <article className="feed-card" key={item.id}>
+                  <header className="feed-header">
                     <div className="avatar small">{getInitial(item.author)}</div>
-                    <div className="pulse-meta">
+                    <div className="feed-meta">
                       <h2>{item.author}</h2>
                       <p>@{item.username} · {item.circle}</p>
                     </div>
@@ -1110,7 +1110,7 @@ function App() {
                     </div>
                   </header>
 
-                  <p className="pulse-text">{item.text}</p>
+                  <p className="feed-text">{item.text}</p>
 
                   {(item.image || item.quote) && (
                     <div className="media-frame">
@@ -1119,7 +1119,7 @@ function App() {
                     </div>
                   )}
 
-                  <footer className="pulse-actions">
+                  <footer className="feed-actions">
                     <button className={item.liked ? 'active' : ''} type="button" onClick={() => toggleLike(item.id)}>
                       <Heart size={19} />
                       {formatCount(item.reactionCount)}
@@ -1155,7 +1155,7 @@ function App() {
                         <input
                           value={commentDrafts[item.id] ?? ''}
                           onChange={(event) => updateCommentDraft(item.id, event.target.value)}
-                          placeholder={`Comment on ${item.author}'s pulse`}
+                          placeholder={`Comment on ${item.author}'s post`}
                         />
                         <button type="submit">
                           <Send size={16} />

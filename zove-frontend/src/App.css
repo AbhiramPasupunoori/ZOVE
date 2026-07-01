@@ -49,7 +49,7 @@
 .theme-dark .nav,
 .theme-dark .view-panel,
 .theme-dark .composer,
-.theme-dark .pulse-card,
+.theme-dark .feed-card,
 .theme-dark .profile-panel,
 .theme-dark .circles-panel,
 .theme-dark .signals-panel,
@@ -76,7 +76,7 @@
 .theme-dark .more-menu,
 .theme-dark .trend-list button,
 .theme-dark .composer-tools button,
-.theme-dark .pulse-actions button,
+.theme-dark .feed-actions button,
 .theme-dark .profile-editor,
 .theme-dark .comment-row p,
 .theme-dark .segmented,
@@ -180,7 +180,7 @@
 .outline-button,
 .submit-button,
 .composer-tools button,
-.pulse-actions button,
+.feed-actions button,
 .circle-row,
 .view-panel button,
 .moment-card,
@@ -214,7 +214,7 @@
   animation: spin 0.9s linear infinite;
 }
 
-.pulse-column {
+.feed-column {
   min-width: 0;
   padding: 24px 0 60px;
 }
@@ -763,7 +763,7 @@ h1 {
 }
 
 .composer,
-.pulse-card,
+.feed-card,
 .profile-panel,
 .circles-panel,
 .signals-panel,
@@ -967,23 +967,23 @@ h1 {
   gap: 16px;
 }
 
-.pulse-card {
+.feed-card {
   padding: 16px;
   position: relative;
 }
 
-.pulse-header {
+.feed-header {
   display: grid;
   grid-template-columns: 48px minmax(0, 1fr) auto 38px;
   align-items: center;
   gap: 11px;
 }
 
-.pulse-meta {
+.feed-meta {
   min-width: 0;
 }
 
-.pulse-meta h2,
+.feed-meta h2,
 .profile-row h2,
 .rail-heading h3,
 .panel-heading h3 {
@@ -991,7 +991,7 @@ h1 {
   line-height: 1.2;
 }
 
-.pulse-meta p,
+.feed-meta p,
 .profile-row p,
 .suggestion-row p,
 .circle-row small {
@@ -1000,7 +1000,7 @@ h1 {
   line-height: 1.34;
 }
 
-.pulse-header time {
+.feed-header time {
   color: var(--muted);
   font-size: 0.82rem;
 }
@@ -1052,7 +1052,7 @@ h1 {
   background: var(--soft);
 }
 
-.pulse-text {
+.feed-text {
   margin: 14px 0;
   font-size: 1rem;
   line-height: 1.55;
@@ -1082,14 +1082,14 @@ h1 {
   font-weight: 800;
 }
 
-.pulse-actions {
+.feed-actions {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 8px;
   margin-top: 12px;
 }
 
-.pulse-actions button {
+.feed-actions button {
   min-height: 40px;
   border-radius: 12px;
   gap: 7px;
@@ -1098,12 +1098,12 @@ h1 {
   font-weight: 850;
 }
 
-.pulse-actions button:hover {
+.feed-actions button:hover {
   color: var(--ink);
   background: #e5edf6;
 }
 
-.pulse-actions button.active {
+.feed-actions button.active {
   color: #ffffff;
   background: linear-gradient(135deg, var(--ink), var(--blue));
 }
@@ -1586,7 +1586,7 @@ label input:focus {
     border-radius: 12px;
   }
 
-  .pulse-column {
+  .feed-column {
     box-sizing: border-box;
     width: 100%;
     max-width: 100%;
@@ -1602,7 +1602,7 @@ label input:focus {
   .feed-controls,
   .composer,
   .moments-strip,
-  .pulse-card,
+  .feed-card,
   .right-rail {
     box-sizing: border-box;
     width: calc(100vw - 20px);
@@ -1706,7 +1706,7 @@ label input:focus {
   }
 
   .composer,
-  .pulse-card {
+  .feed-card {
     border-radius: 16px;
   }
 }
@@ -1791,7 +1791,7 @@ label input:focus {
     width: 100%;
   }
 
-  .pulse-header {
+  .feed-header {
     grid-template-columns: 42px minmax(0, 1fr) auto 36px;
   }
 
@@ -1799,7 +1799,7 @@ label input:focus {
     aspect-ratio: 1 / 1;
   }
 
-  .pulse-actions {
+  .feed-actions {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
